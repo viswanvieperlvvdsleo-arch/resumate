@@ -1,0 +1,25 @@
+# Node modules
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional OS files
+.DS_Store
+Thumbs.db
+node_modules
+
+
+.github/instructions/kluster-code-verify.instructions.md
+.kluster

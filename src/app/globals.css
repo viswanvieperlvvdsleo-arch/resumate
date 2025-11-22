@@ -1,0 +1,170 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 94.1%;
+    --foreground: 275 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 275 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 275 10% 10%;
+    --primary: 275 100% 25.3%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 276 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 95%;
+    --ring: 276 100% 50%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    /* Custom resume styles */
+    --resume-primary-color: #4B0082;
+    --resume-text-color: #333333;
+    --resume-heading-font: 'Belleza', sans-serif;
+    --resume-body-font: 'Alegreya', serif;
+    --resume-heading-font-size: 36px;
+    --resume-subheading-font-size: 20px;
+    --resume-body-font-size: 11px;
+  }
+  .dark {
+    --background: 275 10% 10%;
+    --foreground: 0 0% 98%;
+    --card: 275 10% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 275 10% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 275 10% 10%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 276 100% 60%;
+    --accent-foreground: 275 10% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 276 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-animated {
+    background-size: 200% 200%;
+    background-image: linear-gradient(-45deg, hsl(var(--background)), hsl(0 0% 98%), hsl(0 0% 90%), hsl(var(--background)));
+    animation: background-pan 20s ease-in-out infinite;
+  }
+
+  @keyframes background-pan {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .glow-border {
+    @apply shadow-[0_0_0_0_hsl(var(--accent)/0.5)] transition-all duration-300;
+  }
+
+  .glow-border:hover {
+    @apply shadow-[0_0_15px_2px_hsl(var(--accent)/0.5)];
+  }
+
+  .page-loader {
+    @apply fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300;
+  }
+  
+  .spinner {
+    @apply relative h-16 w-16;
+  }
+  
+  .spinner::before {
+    content: '';
+    @apply box-border absolute inset-0 rounded-full border-8 border-solid border-transparent border-t-primary;
+    animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+
+  .spinner::after {
+    content: '';
+    @apply box-border absolute w-4 h-4 rounded-full bg-primary;
+    top: 10px;
+    left: 10px;
+    animation: dot-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes dot-spin {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(16px, 16px) scale(1.2); }
+  }
+
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: white;
+    background: none;
+    box-shadow: none;
+  }
+  .no-print, .no-print * {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .page {
+    box-shadow: none;
+    margin: 0;
+    page-break-after: always;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+/* 🧾 A4 page layout */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+    
+
