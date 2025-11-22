@@ -1,7 +1,13 @@
 import type {NextConfig} from 'next';
 import pwaConfig from './pwa.config.js';
 
-const withPWA = require('next-pwa')(pwaConfig);
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  ...pwaConfig,
+});
+
 
 const nextConfig: NextConfig = {
   /* config options here */

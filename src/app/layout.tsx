@@ -3,7 +3,6 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
-import { PageLoader } from '@/components/PageLoader';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
@@ -32,7 +31,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={null}>
             {children}
           </Suspense>
           <Toaster />
