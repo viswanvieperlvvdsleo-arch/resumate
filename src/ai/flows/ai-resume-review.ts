@@ -1,6 +1,4 @@
-'use server';
-
-import { ai } from '@/ai/genkit';
+import Groq from "groq-sdk";
 import { z } from '@genkit-ai/core';
 
 // -----------------------------
@@ -25,46 +23,96 @@ export type AIResumeReviewOutput = z.infer<typeof AIResumeReviewOutputSchema>;
 export type AISuggestion = z.infer<typeof SuggestionSchema>;
 
 // -----------------------------
-// Define Prompt
+// Groq Client
 // -----------------------------
-const resumeReviewPrompt = ai.definePrompt({
-  name: 'resumeReviewPrompt',
-  model: 'gemini-1.5',  // <-- model is here
-  input: { schema: AIResumeReviewInputSchema },
-  output: { schema: AIResumeReviewOutputSchema },
-  prompt: `
-You are an AI resume expert. Rewrite & improve resume sections.
-Return JSON with "field" and "suggestion".
-
-Resume:
-{{resumeText}}
-`,
+const client = new Groq({
+  apiKey: process.env.GROQ_API_KEY!,
 });
 
-
-export const aiResumeReviewFlow = ai.defineFlow(
-  {
-    name: 'aiResumeReviewFlow',
-    inputSchema: AIResumeReviewInputSchema,
-    outputSchema: AIResumeReviewOutputSchema,
-  },
-  async (input) => {
-    console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY);
-
-    const { output } = await resumeReviewPrompt(input); // ✅ call prompt like a function
-    if (!output) {
-      throw new Error('AI did not return any suggestions.');
+// -----------------------------
+// Helper: Fetch AI Response with Retry
+// -----------------------------
+async function fetchAIResponse(prompt: string, retries = 2): Promise<string> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await client.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      });
+      const raw = response.choices[0]?.message?.content;
+      if (!raw) throw new Error("Empty AI response");
+      return raw;
+    } catch (err) {
+      if (i === retries) throw err;
+      console.warn("Retrying AI request due to error:", err);
     }
-    return output;
   }
-);
-
+  throw new Error("Failed after retries");
+}
 
 // -----------------------------
-// Export Function
+// Main Function
 // -----------------------------
 export async function reviewResume(
   input: AIResumeReviewInput
 ): Promise<AIResumeReviewOutput> {
-  return aiResumeReviewFlow(input);
+
+  const prompt = `You are an expert resume reviewer and professional career writer.
+Analyze the given resume text and return a JSON containing professional suggestions for each section. 
+
+Requirements:
+1. Correct all spelling and grammar mistakes.
+2. Rewrite in a professional, advanced, and impactful style suitable for a high-quality resume.
+3. Do not provide explanations or extra text—only the improved version.
+4. Keep the original meaning intact.
+5. For the contact section, create separate entries for email, GitHub, LinkedIn, and phone. Construct email using username (e.g., "viswan" -> "viswan@gmail.com").
+
+Target JSON Format:
+{
+  "suggestions": [
+    { "field": "section_name", "suggestion": "improved_text_only" }
+  ]
 }
+
+{
+  "suggestions": [
+    { "field": "email", "suggestion": "viswan@gmail.com" },
+    { "field": "github", "suggestion": "github.com/viswan" },
+    { "field": "linkedin", "suggestion": "linkedin.com/in/viswan" },
+    { "field": "phone", "suggestion": "(123) 456-7890" }
+  ]
+}
+
+
+
+Resume Content:
+"${input.resumeText}"`;
+
+  try {
+    const raw = await fetchAIResponse(prompt);
+
+    console.log("AI RAW OUTPUT:", raw);
+
+    // Robust JSON parsing
+    let json;
+    try {
+      json = JSON.parse(raw);
+    } catch (e) {
+      const cleaned = raw.replace(/(\r\n|\n|\r)/gm, "").replace(/'/g, '"');
+      json = JSON.parse(cleaned);
+    }
+
+    // Validate against schema
+    const parsedData = AIResumeReviewOutputSchema.parse(json);
+    return parsedData;
+
+  } catch (err) {
+    console.error("AI FAILED:", err);
+    throw new Error("Failed to get AI suggestions.");
+  }
+}
+
+
+

@@ -154,62 +154,63 @@ export default function EditPage() {
 
 
   const handleDownloadPdf = async () => {
-    const printableContent = document.getElementById('printable-resume-content');
-    if (!printableContent) return;
-  
-    setIsDownloading(true);
-  
-    try {
-      const resumeContainer = document.getElementById('resume-container');
-      const originalTransform = resumeContainer?.style.transform;
-      if (resumeContainer) resumeContainer.style.transform = 'scale(1)';
-  
-      await new Promise((resolve) => setTimeout(resolve, 300));
-  
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-  
-      const canvas = await html2canvas(printableContent, {
-        scale: 2, 
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: printableContent.scrollWidth,
-        windowHeight: printableContent.scrollHeight
-      });
-  
-      const imgData = canvas.toDataURL('image/jpeg', 0.95); 
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-  
-      let heightLeft = imgHeight;
-      let position = 0;
-  
+  if (!resumeContainerRef.current) return;
+  setIsDownloading(true);
+
+  try {
+    // Clone the resume for clean capture
+    const clone = resumeContainerRef.current.cloneNode(true) as HTMLElement;
+    clone.style.transform = 'scale(1)';
+    clone.style.margin = '0';
+    clone.style.pointerEvents = 'auto';
+    clone.style.width = `${resumeContainerRef.current.scrollWidth}px`;
+    clone.style.height = `${resumeContainerRef.current.scrollHeight}px`;
+    clone.style.position = 'absolute';
+    clone.style.top = '-9999px';
+    clone.style.left = '-9999px';
+
+    document.body.appendChild(clone);
+
+    const canvas = await html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    const pdf = new jsPDF('p', 'px', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Scale image to fit width
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
       pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
       heightLeft -= pdfHeight;
-  
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-  
-      if (resumeContainer) resumeContainer.style.transform = originalTransform || '';
-  
-      pdf.save('ResuMate_Resume.pdf');
-    } catch (error) {
-        console.error(error);
-        toast({
-            variant: "destructive",
-            title: "Download Failed",
-            description: "An unexpected error occurred while generating the PDF.",
-        });
-    } finally {
-        setIsDownloading(false);
     }
-  };
+
+    pdf.save('ResuMate_Resume.pdf');
+    document.body.removeChild(clone);
+  } catch (error) {
+    console.error(error);
+    toast({
+      variant: 'destructive',
+      title: 'Download Failed',
+      description: 'Could not generate PDF. Try again.',
+    });
+  } finally {
+    setIsDownloading(false);
+  }
+};
 
 
   const handleAiReview = async () => {
