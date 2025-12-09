@@ -2,15 +2,16 @@
   "name": "nextn",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack -p 9002",
-    "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
-    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
-    "build": "NODE_ENV=production next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
-  },
+"scripts": {
+  "dev": "next dev --turbopack -p 9002",
+  "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
+  "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+  "build": "cross-env NODE_ENV=production next build",
+  "start": "next start",
+  "lint": "next lint",
+  "typecheck": "tsc --noEmit"
+},
+
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
     "@genkit-ai/next": "^1.20.0",
@@ -50,7 +51,7 @@
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "lucide-react": "^0.475.0",
-    "next": "^16.0.8",
+    "next": "^15.5.7",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.3.0",
     "node-fetch": "^3.3.2",
@@ -71,6 +72,7 @@
     "@types/node": "^20.19.25",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cross-env": "^10.1.0",
     "genkit-cli": "^1.20.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
